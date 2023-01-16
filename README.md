@@ -6,6 +6,7 @@
 		Temperatures - https://www.codingame.com/training/easy/temperatures
 		Mars Lander - Episode 1 - https://www.codingame.com/training/easy/mars-lander-episode-1
 		ASCII Art - https://www.codingame.com/training/easy/ascii-art
+		Horse Racing Duals - https://www.codingame.com/training/easy/horse-racing-duals
 
 ## Medium:
 		Shadow of the Night - Episode 1 - https://www.codingame.com/training/medium/shadows-of-the-knight-episode-1
