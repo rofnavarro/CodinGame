@@ -8,79 +8,73 @@
  * the standard input according to the problem statement.
  **/
 
-int * clear_dupes(int *array, int size)
+char *coding(char *str)
 {
-    int i;
-    int j;
-    int dupes;
-    int new_size;
-    int *no_dupes;
+    int i, j;
 
     i = 0;
-    dupes = 0;
-    while (i < size)
+    while (i < 7)
     {
-        j = i + 1;
-        while (j < size - 1)
+        if (str[i] == '1')
         {
-            if (array[j] == array[i])
-            {
-                array[j] = -1;
-                dupes++;
-            }
-            j++;
+            j = i;
+            while (str[j] == '1')
         }
-        i++;
     }
-    new_size = size - dupes;
-    no_dupes = (int *)malloc(sizeof(int) * new_size);
+
+}
+
+
+char *char_to_bit(char letter)
+{
+    int i, j;
+    int bit;
+    char *ret;
+
+    ret = (char *)malloc(sizeof(char) * 7);
     i = 0;
-    j = 0;
-    while (i < size)
+    j = 6;
+    while (i < 7)
     {
-        if (array[i] > 0)
-        {
-            no_dupes[j] = array[i];
-            j++;
-        }
+        bit = ((letter >> i) & 1);
+        if (bit == 1)
+            ret[j] = '1';
+        else if (bit == 0)
+            ret[j] = '0';
+        j--;
         i++;
     }
-    free(array);
-    return (no_dupes);
+    ret[7] = '\0';
+    printf("%s\n", ret);
+    return (ret);
 }
 
 int main()
 {
-    int N;
-    int *horses, *no_dupes;
-    int j, k, tmp, answer;
+    char MESSAGE[101];
+    char **ret;
+    int i;
+    unsigned int size;
 
-    scanf("%d", &N);
-    horses = (int *)malloc(sizeof(int) * N);
-    for (int i = 0; i < N; i++) {
-        int pi;
-        scanf("%d", &pi);
-        horses[i] = pi;
-    }
+    scanf("%[^\n]", MESSAGE);
 
-    no_dupes = clear_dupes(horses, N);
-
-    while (j < N)
-    {
-        k = j + 1;
-        while (k < N)
-        {
-            tmp = abs(no_dupes[j] - no_dupes[k]);
-            if (tmp < answer)
-                answer = tmp;
-            k++;
-        }
-        j++;
-    }
     // Write an answer using printf(). DON'T FORGET THE TRAILING \n
     // To debug: fprintf(stderr, "Debug messages...\n");
-    printf("%d\n", answer);
 
-    free(no_dupes);
+    size = strlen(MESSAGE) + 1;
+    ret = (char **)malloc(sizeof(char) * size);
+    i = 0;
+    while (i < size - 1)
+    {
+        ret[i] = char_to_bit(MESSAGE[i]);
+        i++;
+    }
+    i = 0;
+    while (i < size)
+    {
+        free(ret[i]);
+        i++;
+    }
+    free(ret);
     return 0;
 }
