@@ -6,6 +6,7 @@
 		Temperatures - https://www.codingame.com/training/easy/temperatures
 		Mars Lander - Episode 1 - https://www.codingame.com/training/easy/mars-lander-episode-1
 		ASCII Art - https://www.codingame.com/training/easy/ascii-art
+		Unary - https://www.codingame.com/training/easy/unary
 		Horse Racing Duals - https://www.codingame.com/training/easy/horse-racing-duals
 
 ## Medium:
