@@ -8,34 +8,31 @@
 
 typedef struct  s_numbers
 {
-    long x;
-    long y;
-}   t_numbers;
-
-typedef struct  s_operation
-{
     char    oper[6];
+    int		x;
+    int		isRefX;
+    int		y;
+    int		isRefY;
     int     answer;
-}   t_operation;
-
-typedef struct   s_program
-{
-    t_numbers   pair;
-    t_operation o_pair;
-}   t_program;
-
+}   t_numbers;
 
  // -----------------------------------UTILS----------------------------------------
 
-int     array_filter(char arg[6])
+int     array_filter(char arg[6], int *ref)
 {
     int     ret;
     char    dif[5];
 
     if (arg[0] == '_')
+    {
+        *ref = 0;
         ret = 0;
+    }
     else if (arg[0] != '$')
+    {
+        *ref = 0;
         ret = atoi(arg);
+    }
     else
     {
         int i;
@@ -47,49 +44,51 @@ int     array_filter(char arg[6])
             i++;
         }
         ret = atoi(dif);
-        ret = ret + 1000000001;
+        *ref = 1;
     }
     return (ret);
 }
 
-void    run_operation(t_program *program, int i)
+void    run_operation(t_numbers **program, int i)
 {
-    if (strcmp(program[i].o_pair.oper, "VALUE") == 0)
-        program[i].o_pair.answer = program[i].pair.x;
-    else if (strcmp(program[i].o_pair.oper, "ADD") == 0)
-        program[i].o_pair.answer = program[i].pair.x + program[i].pair.y;
-    else if (strcmp(program[i].o_pair.oper, "SUB") == 0)
-        program[i].o_pair.answer = program[i].pair.x - program[i].pair.y;
-    else if (strcmp(program[i].o_pair.oper, "MULT") == 0)
-        program[i].o_pair.answer = program[i].pair.x * program[i].pair.y;
+    if (strcmp(program[i]->oper, "VALUE") == 0)
+        program[i]->answer = program[i]->x;
+    else if (strcmp(program[i]->oper, "ADD") == 0)
+        program[i]->answer = program[i]->x + program[i]->y;
+    else if (strcmp(program[i]->oper, "SUB") == 0)
+        program[i]->answer = program[i]->x - program[i]->y;
+    else if (strcmp(program[i]->oper, "MULT") == 0)
+        program[i]->answer = program[i]->x * program[i]->y;
 }
 
-int     derref_value(t_program *program, int i)
+int     derref_value(t_numbers **program, int i)
 {
     int ref;
 
-    if (program[i].pair.x > 1000000000)
+    if (program[i]->isRefX != 0)
     {
-        ref = program[i].pair.x - 1000000001;
-        if (program[ref].pair.x < 1000000000 && program[ref].pair.y < 1000000000)
+        ref = program[i]->x;
+        if (program[ref]->isRefX == 0 && program[ref]->isRefY == 0)
         {
-            program[i].pair.x = program[ref].o_pair.answer; 
+            program[i]->x = program[ref]->answer; 
+            program[i]->isRefX = 0;
             return (0);
         }
     }
-    if (program[i].pair.y > 1000000000)
+    if (program[i]->isRefY != 0)
     {
-        ref = program[i].pair.y - 1000000001;
-        if (program[ref].pair.y < 1000000000 && program[ref].pair.y < 1000000000)
+        ref = program[i]->y;
+        if (program[ref]->isRefY == 0 && program[ref]->isRefY == 0)
         {
-            program[i].pair.y = program[ref].o_pair.answer; 
+            program[i]->y = program[ref]->answer;
+            program[i]->isRefY = 0;
             return (0);
         }
     }
     return (1);
 }
 
-void    run_program(t_program *program, int size)
+void    run_program(t_numbers *program, int size)
 {
     int i, start;
     int finished;
@@ -99,7 +98,7 @@ void    run_program(t_program *program, int size)
     i = 0;
     while (i < size)
     {
-        if (program[i].pair.x <= 1000000000 || program[i].pair.y <= 1000000000)
+        if (program[i].isRefX == 0 || program[i].isRefY == 0)
             break;
         i++;
     }
@@ -107,19 +106,19 @@ void    run_program(t_program *program, int size)
     {
         while (i < size)
         {
-            if (program[i].pair.x > 1000000000 || program[i].pair.y > 1000000000)
+            if (program[i].isRefX != 0 || program[i].isRefY != 0)
             {
-                derref = derref_value(program, i);
+                derref = derref_value(&program, i);
                 if (derref == 0)
-                    run_operation(program, i);
+                    run_operation(&program, i);
             }
             else
-                run_operation(program, i);
-        i++;
+                run_operation(&program, i);
+        	i++;
         }
         for (int j = 0; j < size; j++)
         {
-            if (program[j].pair.x > 1000000000 || program[i].pair.y > 1000000000)
+            if (program[j].isRefX != 0 || program[i].isRefY != 0)
                 i = 0;
             else
                 finished = 0;
@@ -134,10 +133,10 @@ void    run_program(t_program *program, int size)
 int     main()
 {
     int         N;
-    t_program   *program;
+    t_numbers	*program;
 
     scanf("%d", &N);
-    program = (t_program *)malloc(sizeof(t_program) * N);
+    program = (t_numbers *)malloc(sizeof(t_numbers) * N);
 
     for (int i = 0; i < N; i++)
     {
@@ -146,17 +145,16 @@ int     main()
         char arg_2[7];
         scanf("%s%s%s", operation, arg_1, arg_2);
 
-        strcpy(program[i].o_pair.oper, operation);
-        program[i].pair.x = array_filter(arg_1);
-        program[i].pair.y = array_filter(arg_2);
+        strcpy(program[i].oper, operation);
+        program[i].x = array_filter(arg_1, &program[i].isRefX);
+        program[i].y = array_filter(arg_2, &program[i].isRefY);
     }
     
     run_program(program, N);
 
-
     for (int i = 0; i < N; i++)
     {
-        printf("%d\n", program[i].o_pair.answer);
+        printf("%d\n", &program[i].answer);
     }
 
     free(program);
