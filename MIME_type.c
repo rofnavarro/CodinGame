@@ -10,6 +10,27 @@ typedef struct  s_program
     char table[51];
 }t_program;
 
+void sort(t_program *program, int n)
+{
+    int i, item;
+    t_program tmp;
+
+    for (item = 1; item < n; item++) 
+    {
+        strcpy(tmp.extension, program[item].extension);
+        strcpy(tmp.table, program[item].table);
+
+        for (i = item; strcmp(program[i - 1].extension, tmp.extension) > 0 && i > 0; i++) 
+        {
+            memcpy(&program[i + 1].extension, &program[i].extension, (item - i));
+            strcpy(program[i].extension, tmp.extension);
+            memcpy(&program[i + 1].table, &program[i].table, (item - i));
+            strcpy(program[i].table, tmp.table);
+        }
+
+    }
+}
+
 char *search_table(char *file, t_program *table, int N)
 {
     char    *ret;
@@ -17,7 +38,6 @@ char *search_table(char *file, t_program *table, int N)
     int     size;
     int     ref;
     int     i;
-    int     found;
 
     size = strlen(file);
     ref = size;
@@ -36,30 +56,20 @@ char *search_table(char *file, t_program *table, int N)
         i++;
     }
     i = 0;
-    found = 1;
-    while (found != 0)
+    while (i < N)
     {
-        while (i < N)
+        if (tmp[0] == table[i].extension[0])
         {
-            if (tmp[0] == table[i].extension[0])
-            {
-                if (strcmp(tmp, table[i].extension) == 0)
-                {
-                    //printf("%s\n", tmp);
-                    //printf("%s\n", table[i].extension);
-                    ret = table[i].table;
-                    found = 0;
-                }
-
+            if (strcmp(tmp, table[i].extension) == 0)
+            {   
+                ret = table[i].table;
+                break;
             }
-            i++;
         }
-        if (found == 1)
-        {
-            ret = "UNKNOWN";
-            found = 0;
-        }
+        i++;
     }
+    if (i == N)
+        ret = "UNKNOWN";
     return (ret);
 }
 
@@ -87,7 +97,6 @@ int main()
         i++;
     }
 
-
     for (i = 0; i < N; i++) 
     {
         // file extension
@@ -104,6 +113,8 @@ int main()
         strcpy(program[i].table, MT);
     }
 
+    sort(program, N);
+
     for (int i = 0; i < Q; i++) 
     {
         // One file name per line.
@@ -112,29 +123,26 @@ int main()
         strcpy(files[i], FNAME);
     }
 
-    // Write an answer using printf(). DON'T FORGET THE TRAILING \n
-    // To debug: fprintf(stderr, "Debug messages...\n");
-
-
     // For each of the Q filenames, display on a line the corresponding MIME type. If there is no corresponding type, then display UNKNOWN.
     i = 0;
     while (i < Q)
     {
         char *ret;
 
-
         ret = search_table(files[i], program, N);
         printf("%s\n", ret);
         i++;
-
     }
+
     i = 0;
     while (i < Q)
     {
         free(files[i]);
         i++;
     }
+
     free(files);
     free(program);
+    
     return 0;
 }
