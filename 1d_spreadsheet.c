@@ -3,160 +3,163 @@
 #include <string.h>
 #include <stdbool.h>
 
-
- // -----------------------------------STRUCTS--------------------------------------
-
 typedef struct  s_numbers
 {
-    char    oper[6];
-    int		x;
-    int		isRefX;
-    int		y;
-    int		isRefY;
+    int     x;
+    int     x_ref;
+    int     y;
+    int     y_ref;
     int     answer;
 }   t_numbers;
 
- // -----------------------------------UTILS----------------------------------------
-
-int     array_filter(char arg[6], int *ref)
+typedef struct  s_node
 {
-    int     ret;
-    char    dif[5];
+    char        *oper;
+    t_numbers   points;
+}   t_node;
 
-    if (arg[0] == '_')
-    {
-        *ref = 0;
-        ret = 0;
-    }
-    else if (arg[0] != '$')
-    {
-        *ref = 0;
-        ret = atoi(arg);
-    }
-    else
-    {
-        int i;
-
-        i = 1;
-        while (i < 6)
-        {
-            dif[i - 1] = arg[i];
-            i++;
-        }
-        ret = atoi(dif);
-        *ref = 1;
-    }
-    return (ret);
-}
-
-void    run_operation(t_numbers **program, int i)
+void    set_ref(char *arg, int *number)
 {
-    if (strcmp(program[i]->oper, "VALUE") == 0)
-        program[i]->answer = program[i]->x;
-    else if (strcmp(program[i]->oper, "ADD") == 0)
-        program[i]->answer = program[i]->x + program[i]->y;
-    else if (strcmp(program[i]->oper, "SUB") == 0)
-        program[i]->answer = program[i]->x - program[i]->y;
-    else if (strcmp(program[i]->oper, "MULT") == 0)
-        program[i]->answer = program[i]->x * program[i]->y;
-}
+    int     i;
+    char    *tmp;
 
-int     derref_value(t_numbers **program, int i)
-{
-    int ref;
-
-    if (program[i]->isRefX != 0)
+    tmp = (char *)malloc(sizeof(char) * strlen(arg));
+    
+    i = 1;
+    while (i < strlen(arg))
     {
-        ref = program[i]->x;
-        if (program[ref]->isRefX == 0 && program[ref]->isRefY == 0)
-        {
-            program[i]->x = program[ref]->answer; 
-            program[i]->isRefX = 0;
-            return (0);
-        }
-    }
-    if (program[i]->isRefY != 0)
-    {
-        ref = program[i]->y;
-        if (program[ref]->isRefY == 0 && program[ref]->isRefY == 0)
-        {
-            program[i]->y = program[ref]->answer;
-            program[i]->isRefY = 0;
-            return (0);
-        }
-    }
-    return (1);
-}
-
-void    run_program(t_numbers *program, int size)
-{
-    int i, start;
-    int finished;
-    int derref;
-
-    finished = 1;
-    i = 0;
-    while (i < size)
-    {
-        if (program[i].isRefX == 0 || program[i].isRefY == 0)
-            break;
+        tmp[i - 1] = arg[i];
         i++;
     }
-    while (finished != 0)
-    {
-        while (i < size)
-        {
-            if (program[i].isRefX != 0 || program[i].isRefY != 0)
-            {
-                derref = derref_value(&program, i);
-                if (derref == 0)
-                    run_operation(&program, i);
-            }
-            else
-                run_operation(&program, i);
-        	i++;
-        }
-        for (int j = 0; j < size; j++)
-        {
-            if (program[j].isRefX != 0 || program[i].isRefY != 0)
-                i = 0;
-            else
-                finished = 0;
-        }
+    tmp[i] = '\0';
 
+    *number = atoi(tmp);
+}
+
+void    operation(t_node **program, int i)
+{
+    if (program[i]->points.x_ref == 0 && program[i]->points.y_ref == 0)
+    {
+        if (strcmp(program[i]->oper, "VALUE") == 0)
+            program[i]->points.answer = program[i]->points.x;
+        else if (strcmp(program[i]->oper, "ADD") == 0)
+            program[i]->points.answer = program[i]->points.x + program[i]->points.y;
+        else if (strcmp(program[i]->oper, "SUB") == 0)
+            program[i]->points.answer = program[i]->points.x - program[i]->points.y;
+        else if (strcmp(program[i]->oper, "MULT") == 0)
+            program[i]->points.answer = program[i]->points.x * program[i]->points.y;
     }
 }
 
+int    de_ref(t_node *program)
+{
+    int i;
 
- // -----------------------------------MAIN-----------------------------------------
+    i = 0;
+    while (program[i].points.x_ref != 0 && program[i].points.y_ref != 0)
+    {
+        i++;
+    }
+    operation(&program, i);
+    return (i);
+}
+
+void    solve_ref(t_node *program, int start, int size)
+{
+    int i;
+
+    i = 0;
+    if (i < size)
+    {
+        if (program[i].points.x_ref != 0)
+        {
+            if (program[i].points.x == start)
+            {
+                program[i].points.x = program[start].points.answer;
+                program[i].points.x_ref = 0;
+            }
+        }
+        if (program[i].points.y_ref != 0)
+        {
+            if (program[i].points.y == start)
+            {
+                program[i].points.y = program[start].points.answer;
+                program[i].points.y_ref = 0;
+            }
+        }
+        printf("i = %d, size = %d\n", i, size);
+        if (program[i].points.x_ref == 0 && program[i].points.y_ref == 0)
+        {
+            operation(&program, i);
+            start = de_ref(program);
+            printf("operacao = %s, x = %d, x ref = %d, y = %d, y ref = %d, answ = %d\n", program[i].oper, program[i].points.x, program[i].points.x_ref, program[i].points.y, program[i].points.y_ref, program[i].points.answer);            
+        }
+        else if (program[i].points.x_ref != 0 || program[i].points.y_ref != 0)
+        {
+            solve_ref(program, i++, size);
+        }
+    }
+}
 
 int     main()
 {
-    int         N;
-    t_numbers	*program;
-
+    t_node  *program;
+    int     N;
+    int     start;
+    
     scanf("%d", &N);
-    program = (t_numbers *)malloc(sizeof(t_numbers) * N);
+    program = (t_node *)malloc(sizeof(t_node) * N);
 
     for (int i = 0; i < N; i++)
     {
         char operation[6];
         char arg_1[7];
         char arg_2[7];
+
         scanf("%s%s%s", operation, arg_1, arg_2);
+        program[i].oper = strdup(operation);
 
-        strcpy(program[i].oper, operation);
-        program[i].x = array_filter(arg_1, &program[i].isRefX);
-        program[i].y = array_filter(arg_2, &program[i].isRefY);
+        if (arg_1[0] == '_')
+            program[i].points.x = 0;
+        else if (arg_1[0] == '$')
+        {
+            program[i].points.x_ref = 1;
+            set_ref(arg_1, &program[i].points.x);
+        }
+        else if (arg_1[0] >= '0' && arg_1[0] <= '9')
+        {
+            program[i].points.x = atoi(arg_1);
+            program[i].points.x_ref = 0;
+        }
+
+        if (arg_2[0] == '_')
+            program[i].points.y = 0;
+        else if (arg_2[0] == '$')
+        {
+            program[i].points.y_ref = 1;
+            set_ref(arg_2, &program[i].points.y);
+        }
+        else if (arg_2[0] >= '0' && arg_2[0] <= '9')
+        {
+            program[i].points.y = atoi(arg_2);
+            program[i].points.y_ref = 0;
+        }
     }
-    
-    run_program(program, N);
 
-    for (int i = 0; i < N; i++)
+    start = de_ref(program);
+    solve_ref(program, start, N);
+
+    int i = 0;
+    while (i < N)
     {
-        printf("%d\n", &program[i].answer);
+        printf("operacao = %s, x = %d, x ref = %d, y = %d, y ref = %d, answ = %d\n", program[i].oper, program[i].points.x, program[i].points.x_ref, program[i].points.y, program[i].points.y_ref, program[i].points.answer);
+        i++;
     }
+/*    for (int i = 0; i < N; i++)
+    {
 
-    free(program);
+        printf("%d\n", program[i].points.answer);
+    }
+*/
     return 0;
 }
