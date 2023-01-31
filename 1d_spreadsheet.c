@@ -51,7 +51,7 @@ void    operation(t_node **program, int i)
     }
 }
 
-int    de_ref(t_node *program)
+int    ref_start(t_node *program)
 {
     int i;
 
@@ -64,39 +64,45 @@ int    de_ref(t_node *program)
     return (i);
 }
 
-void    solve_ref(t_node *program, int start, int size)
+int     solved(t_node *program, int size)
 {
     int i;
 
     i = 0;
-    if (i < size)
+    while (i < size)
     {
-        if (program[i].points.x_ref != 0)
+        if (program[i].points.x_ref != 0 || program[i].points.y_ref != 0)
+            return (1);
+        i++;
+    }
+    return (0);
+}
+
+void    solve_ref(t_node *program, int start, int size)
+{
+    int i;
+
+    while (solved(program, size) != 0)
+    {
+        i = 0;
+        while (i < size)
         {
-            if (program[i].points.x == start)
+            if (program[i].points.x_ref != 0 && program[i].points.x == start && \
+                program[start].points.x_ref == 0 && program[start].points.y_ref == 0)
             {
                 program[i].points.x = program[start].points.answer;
                 program[i].points.x_ref = 0;
+                operation(&program, i);
             }
-        }
-        if (program[i].points.y_ref != 0)
-        {
-            if (program[i].points.y == start)
+            if (program[i].points.y_ref != 0 && program[i].points.y == start && \
+                program[start].points.x_ref == 0 && program[start].points.y_ref == 0)
             {
                 program[i].points.y = program[start].points.answer;
                 program[i].points.y_ref = 0;
+                operation(&program, i);
             }
-        }
-        printf("i = %d, size = %d\n", i, size);
-        if (program[i].points.x_ref == 0 && program[i].points.y_ref == 0)
-        {
             operation(&program, i);
-            start = de_ref(program);
-            printf("operacao = %s, x = %d, x ref = %d, y = %d, y ref = %d, answ = %d\n", program[i].oper, program[i].points.x, program[i].points.x_ref, program[i].points.y, program[i].points.y_ref, program[i].points.answer);            
-        }
-        else if (program[i].points.x_ref != 0 || program[i].points.y_ref != 0)
-        {
-            solve_ref(program, i++, size);
+            i++;
         }
     }
 }
@@ -146,7 +152,7 @@ int     main()
         }
     }
 
-    start = de_ref(program);
+    start = ref_start(program);
     solve_ref(program, start, N);
 
     int i = 0;
