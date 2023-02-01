@@ -56,7 +56,7 @@ int    ref_start(t_node *program)
     int i;
 
     i = 0;
-    while (program[i].points.x_ref != 0 && program[i].points.y_ref != 0)
+    while (program[i].points.x_ref != 0 || program[i].points.y_ref != 0)
     {
         i++;
     }
@@ -80,28 +80,36 @@ int     solved(t_node *program, int size)
 
 void    solve_ref(t_node *program, int start, int size)
 {
+    int ref;
     int i;
 
+    ref = start;
     while (solved(program, size) != 0)
     {
         i = 0;
         while (i < size)
         {
-            if (program[i].points.x_ref != 0 && program[i].points.x == start && \
-                program[start].points.x_ref == 0 && program[start].points.y_ref == 0)
+            if (program[i].points.x_ref == 1)
             {
-                program[i].points.x = program[start].points.answer;
-                program[i].points.x_ref = 0;
-                operation(&program, i);
+                if (program[i].points.x == ref && program[ref].points.x_ref == 0 && program[ref].points.y_ref == 0)
+                {
+                    program[i].points.x = program[ref].points.answer;
+                    if (program[i].points.y_ref == 0)
+                    {
+                        operation(&program, i);
+                        ref = i;
+                    }
+                }
+                if (program[i].points.y == ref && program[ref].points.x_ref == 0 && program[ref].points.y_ref == 0)
+                {
+                    program[i].points.y = program[ref].points.answer;
+                    if (program[i].points.x_ref == 0)
+                    {
+                        operation(&program, i);
+                        ref = i;
+                    }
+                }
             }
-            if (program[i].points.y_ref != 0 && program[i].points.y == start && \
-                program[start].points.x_ref == 0 && program[start].points.y_ref == 0)
-            {
-                program[i].points.y = program[start].points.answer;
-                program[i].points.y_ref = 0;
-                operation(&program, i);
-            }
-            operation(&program, i);
             i++;
         }
     }
